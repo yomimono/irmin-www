@@ -58,15 +58,17 @@ module Main (Stack:STACKV4) (Conf:KV_RO) (Clock:V1.CLOCK) = struct
 
   let handle_request s _conn_id request _body =
     let path = Uri.path (Cohttp.Request.uri request) in
+    let headers = Cohttp.Header.of_list [("Access-Control-Allow-Origin",
+                                              "*")] in
     let s = s path in
     let ps = split_path path in
     Store.read s ps >>= function
-    | Some body -> S.respond_string ~status:`OK ~body ()
+    | Some body -> S.respond_string ~headers ~status:`OK ~body ()
     | None ->
         Store.read s (ps @ ["index.html"]) >>= function
-        | Some body -> S.respond_string ~status:`OK ~body ()
+        | Some body -> S.respond_string ~headers ~status:`OK ~body ()
         | None ->
-            S.respond_error ~status:`Not_found ~body:(Printf.sprintf "File '%s' does not exist" path) ()
+            S.respond_error ~headers ~status:`Not_found ~body:(Printf.sprintf "File '%s' does not exist" path) ()
 
   let dump s =
     let s = s "export" in
@@ -117,9 +119,6 @@ module Main (Stack:STACKV4) (Conf:KV_RO) (Clock:V1.CLOCK) = struct
     let http = S.make ~conn_closed:ignore ~callback:(handle_request s) () in
     Stack.listen_tcpv4 stack ~port:8443 (wrap_tls tls_config (S.listen http));
     let module Irmin_server = struct
-      (* We have to define this here because we need [stack] in scope
-         * for [listen]. Perhaps it would make more sense for [Irmin_http_server]
-         * to return the spec, rather than calling [listen] itself? *)
       module Date_printer = struct
         let pretty d =
           Printf.sprintf "%Ld" d
