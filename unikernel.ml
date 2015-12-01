@@ -120,15 +120,14 @@ module Main (Stack:STACKV4) (Conf:KV_RO) (Clock:V1.CLOCK) = struct
       (* We have to define this here because we need [stack] in scope
          * for [listen]. Perhaps it would make more sense for [Irmin_http_server]
          * to return the spec, rather than calling [listen] itself? *)
-      module X = S
-      module Y = struct
+      module Date_printer = struct
         let pretty d =
           Printf.sprintf "%Ld" d
       end
 
-      include Irmin_http_server.Make(X)(Y)(Store)
+      include Irmin_http_server.Make(S)(Date_printer)(Store)
     end in
-    let spec = Irmin_server.http_spec (s "server") ~strict:true in
+    let spec = Irmin_server.http_spec (s "server") ~strict:false in
     Stack.listen_tcpv4 stack ~port:8444 (wrap_tls tls_config (S.listen spec));
     Stack.listen stack
 end
