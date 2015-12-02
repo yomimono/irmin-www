@@ -37,13 +37,15 @@ let main =
   let libraries = if get_mode () = `Xen then libraries else "irmin.unix" :: libraries in
   foreign
     ~libraries
-    ~packages:["irmin"; "mirage-http"; "nocrypto"; "mirage-flow"; "tls"; "nocrypto";
-               "mirage-types-lwt"; "channel"; "git"; "mirage-git"; "crc"]
-    "Unikernel.Main" (stackv4 @-> kv_ro @-> clock @-> job)
+    ~packages:["irmin"; "mirage-http"; "tls"; "nocrypto";
+               "mirage-types-lwt"; "git"; "mirage-git"; "crc"]
+    "Unikernel.Main" (console @-> stackv4 @-> kv_ro @-> clock @-> job)
 
 let conf = crunch "conf"
 
+let console = default_console
+
 let () =
   register "irmin-www" [
-    main $ stack default_console $ conf $ default_clock
+    main $ console $ stack default_console $ conf $ default_clock
   ]
