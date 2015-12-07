@@ -35,7 +35,7 @@ let main =
   let libraries = ["irmin.git"; "mirage-http"; "irmin.mirage"; "tls.mirage";
                    "crc"] in
   let libraries = if get_mode () = `Xen then libraries else "irmin.unix" :: libraries in
-  foreign
+  foreign ~deps:[abstract nocrypto]
     ~libraries
     ~packages:["irmin"; "mirage-http"; "tls"; "nocrypto";
                "mirage-types-lwt"; "git"; "mirage-git"; "crc"]

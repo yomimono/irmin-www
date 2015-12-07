@@ -110,7 +110,7 @@ module Main (Console : CONSOLE) (Stack:STACKV4) (Conf:KV_RO) (Clock:V1.CLOCK) = 
                          (Hash.to_hum head))
     | true -> return ()
 
-  let start console stack conf _clock =
+  let start console stack conf _clock () =
     X509.certificate conf `Default >>= fun cert ->
     let tls_config = Tls.Config.server ~certificates:(`Single cert) () in
     Store.Repo.create config >>= fun r ->
